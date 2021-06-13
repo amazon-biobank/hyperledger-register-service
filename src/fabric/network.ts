@@ -1,55 +1,61 @@
 'use strict';
 
-const { FileSystemWallet, InMemoryWallet, Gateway, X509WalletMixin } = require('fabric-network');
+import { Wallets, Gateway } from 'fabric-network';
+import FabricCAServices from 'fabric-ca-client';
+
 const path = require('path');
 const fs = require('fs');
 
 //connect to the config file
-const configPath = path.join(process.cwd(), './config.json');
+const configPath = path.join(process.cwd(), './src/config.json');
 const configJSON = fs.readFileSync(configPath, 'utf8');
 const config = JSON.parse(configJSON);
 let connection_file = config.connection_file;
-
 let gatewayDiscovery = config.gatewayDiscovery;
 let appAdmin = config.appAdmin;
-let orgMSPID = config.orgMSPID;
+let orgKey = config.orgKey;
 
 const ccpPath = path.join(process.cwd(), connection_file);
 const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
 
+const organizationConfig = ccp.organizations[orgKey];
+const caKey = organizationConfig.certificateAuthorities[0];
 
-const util = require('util');
-
+const caURL = ccp.certificateAuthorities[caKey].url;
+const ca = new FabricCAServices(caURL);
 
 exports.registerUser = async function (userId) {
 
   try {
     const walletPath = path.join(process.cwd(), 'wallet');
-    const adminWallet = new FileSystemWallet(walletPath);
+    const adminWallet = await Wallets.newFileSystemWallet(walletPath);
 
-    const adminExists = await adminWallet.exists(appAdmin);
 
-    if (!adminExists) {
+    const adminIdentity = await adminWallet.get(appAdmin);
+
+    if (!adminIdentity) {
       return {
         error: `An identity for the admin user ${appAdmin} does not exist in the AdminWallet. 
-        Run the enrollAdmin.js application before retrying`
+        Run the src/enrollAdmin.js application before retrying`
       };
     }
 
     const gateway = new Gateway();
-    await gateway.connect(ccp, { adminWallet, identity: appAdmin, discovery: gatewayDiscovery });
+    await gateway.connect(ccp, { wallet: adminWallet, identity: appAdmin, discovery: gatewayDiscovery });
 
-    const ca = gateway.getClient().getCertificateAuthority();
-    const adminIdentity = gateway.getCurrentIdentity();
+    const provider = adminWallet.getProviderRegistry().getProvider(adminIdentity.type);
+    const adminUser = await provider.getUserContext(adminIdentity, 'admin');
 
-    const secret = await ca.register({ affiliation: '', enrollmentID: userId, role: 'client' }, adminIdentity);
+    const secret = await ca.register({ affiliation: 'usp', enrollmentID: userId, role: 'client' }, adminUser);
 
     const enrollment = await ca.enroll({ enrollmentID: userId, enrollmentSecret: secret });
-    let response = {certificate: enrollment.certificate, privateKey: enrollment.key, orgMSPID: orgMSPID}
+  
+
+    let response = {certificate: enrollment.certificate, privateKey: enrollment.key.toBytes(), orgMSPID: organizationConfig.mspid}
     return response;
   } catch (error) {
-    console.error(`Failed to register user + ${userId} + : ${error}`);
+    console.error(`Failed to register user ${userId}: ${error}`);
     return {error: error};
   }
 };

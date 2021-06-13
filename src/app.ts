@@ -1,12 +1,17 @@
 import express from 'express';
 let network = require('./fabric/network.js');
+var bodyParser = require('body-parser')
+
 
 
 const app = express();
 const port = 3000;
 
-app.post('/registerUser', async (req, res) => {
 
+app.use(bodyParser.json())
+
+app.post('/registerUser', async (req, res) => {
+  console.log(req.body);
   let userId = req.body.userId;
   if (!userId){
     return res.send("Missing userId parameter")
