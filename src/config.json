@@ -1,0 +1,7 @@
+{
+  "connection_file": "src/local_fabric_connection.json",
+  "appAdmin": "admin",
+  "appAdminSecret": "adminpw",
+  "orgKey": "Org1",
+  "caName": "https://50.23.5.248:32087"
+}
