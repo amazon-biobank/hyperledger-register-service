@@ -20,6 +20,22 @@ app.post('/registerUser', async (req, res) => {
   let response = await network.registerUser(userId);
 
   if (response.error) {
+    res.status(500).send(response.error);
+  } else {
+    res.send(response);
+  }
+});
+
+app.post('/revokeUser', async (req, res) => {
+  console.log(req.body);
+  let userId = req.body.userId;
+  if (!userId){
+    return res.send("Missing userId parameter")
+  }
+
+  let response = await network.revokeUser(userId);
+
+  if (response.error) {
     res.send(response.error);
   } else {
     res.send(response);

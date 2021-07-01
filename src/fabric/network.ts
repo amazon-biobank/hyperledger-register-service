@@ -25,31 +25,30 @@ const caKey = organizationConfig.certificateAuthorities[0];
 const caURL = ccp.certificateAuthorities[caKey].url;
 const ca = new FabricCAServices(caURL);
 
-exports.registerUser = async function (userId) {
+const registerUser = async function (userId) {
 
   try {
     const walletPath = path.join(process.cwd(), 'wallet');
-    const adminWallet = await Wallets.newFileSystemWallet(walletPath);
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
 
 
-    const adminIdentity = await adminWallet.get(appAdmin);
-
+    const adminIdentity = await wallet.get(appAdmin);
     if (!adminIdentity) {
       return {
-        error: `An identity for the admin user ${appAdmin} does not exist in the AdminWallet. 
+        error: `An identity for the admin user ${appAdmin} does not exist in the wallet. 
         Run the src/enrollAdmin.js application before retrying`
       };
     }
 
     const gateway = new Gateway();
-    await gateway.connect(ccp, { wallet: adminWallet, identity: appAdmin, discovery: gatewayDiscovery });
+    await gateway.connect(ccp, { wallet: wallet, identity: appAdmin, discovery: gatewayDiscovery });
 
-    const provider = adminWallet.getProviderRegistry().getProvider(adminIdentity.type);
+    const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
     const adminUser = await provider.getUserContext(adminIdentity, 'admin');
-
-    const secret = await ca.register({ affiliation: 'usp', enrollmentID: userId, role: 'client' }, adminUser);
-
-    const enrollment = await ca.enroll({ enrollmentID: userId, enrollmentSecret: secret });
+    const user = { affiliation: 'org1', enrollmentID: userId, role: 'client' };
+    const secret = await ca.register(user, adminUser);
+    const enrollRequest = { enrollmentID: userId, enrollmentSecret: secret };
+    const enrollment = await ca.enroll(enrollRequest);
   
 
     let response = {certificate: enrollment.certificate, privateKey: enrollment.key.toBytes(), orgMSPID: organizationConfig.mspid}
@@ -59,3 +58,39 @@ exports.registerUser = async function (userId) {
     return {error: error};
   }
 };
+
+
+const revokeUser = async function (userId) {
+
+  try {
+    const walletPath = path.join(process.cwd(), 'wallet');
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
+
+
+    const adminIdentity = await wallet.get(appAdmin);
+    if (!adminIdentity) {
+      return {
+        error: `An identity for the admin user ${appAdmin} does not exist in the wallet. 
+        Run the src/enrollAdmin.js application before retrying`
+      };
+    }
+
+    const gateway = new Gateway();
+    await gateway.connect(ccp, { wallet: wallet, identity: appAdmin, discovery: gatewayDiscovery });
+
+    const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
+    const adminUser = await provider.getUserContext(adminIdentity, 'admin');
+    const identityService = ca.newIdentityService();
+    identityService.delete(userId, adminUser);
+  
+    return {message: "Revoked user successfuly"};
+  } catch (error) {
+    console.error(`Failed to register user ${userId}: ${error}`);
+    return {error: error};
+  }
+};
+
+module.exports = {
+  registerUser,
+  revokeUser
+}
