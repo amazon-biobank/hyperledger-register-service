@@ -42,14 +42,8 @@ const registerUser = async function (userId) {
 
     const gateway = new Gateway();
     await gateway.connect(ccp, { wallet: wallet, identity: appAdmin, discovery: gatewayDiscovery });
-
-    const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
-    const adminUser = await provider.getUserContext(adminIdentity, 'admin');
-    const user = { affiliation: 'org1', enrollmentID: userId, role: 'client' };
-    const secret = await ca.register(user, adminUser);
-    const enrollRequest = { enrollmentID: userId, enrollmentSecret: secret };
-    const enrollment = await ca.enroll(enrollRequest);
-  
+    const enrollment = await enrollUser(wallet, adminIdentity, userId);
+    await createAccount(gateway, enrollment, userId);
 
     let response = {certificate: enrollment.certificate, privateKey: enrollment.key.toBytes(), orgMSPID: organizationConfig.mspid}
     return response;
@@ -89,6 +83,28 @@ const revokeUser = async function (userId) {
     return {error: error};
   }
 };
+
+async function enrollUser(wallet: any, adminIdentity: any, userId: any) {
+  const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
+  const adminUser = await provider.getUserContext(adminIdentity, 'admin');
+  const user = { affiliation: 'org1', enrollmentID: userId, role: 'client' };
+  const secret = await ca.register(user, adminUser);
+  const enrollRequest = { enrollmentID: userId, enrollmentSecret: secret };
+  const enrollment = await ca.enroll(enrollRequest);
+  return enrollment;
+}
+
+async function createAccount(gateway: any, enrollment: any, userId: any) {
+  const network = await gateway.getNetwork('channel2');
+  const contract = await network.getContract('currency', 'AccountContract');
+  const createdAt = new Date();
+  const accountAttributes = {
+    certificate: enrollment.certificate,
+    name: userId,
+    created_at: createdAt.toDateString()
+  };
+  return contract.submitTransaction('createAccount', [JSON.stringify(accountAttributes)]);
+}
 
 module.exports = {
   registerUser,
