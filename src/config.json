@@ -1,5 +1,5 @@
 {
-  "connection_file": "../../biobank/blockchain/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json",
+  "connection_file": "src/connection-org1.json",
   "appAdmin": "admin",
   "appAdminSecret": "adminpw",
   "orgKey": "Org1",
