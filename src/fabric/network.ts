@@ -16,7 +16,6 @@ let appAdmin = config.appAdmin;
 let orgKey = config.orgKey;
 
 const ccpPath = path.join(process.cwd(), connection_file);
-console.log("ccpPath: ", ccpPath);
 const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
 
