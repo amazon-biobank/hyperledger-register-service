@@ -1,6 +1,7 @@
 import express from 'express';
 let network = require('./fabric/network.js');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -13,10 +14,11 @@ app.use(bodyParser.json())
 app.post('/registerUser', async (req, res) => {
   console.log(req.body);
   let userId = req.body.userId;
-  if (!userId){
+  if (!userId) {
     return res.send("Missing userId parameter")
   }
-
+  //USING UUID FOR DEVELOP PURPOSES
+  userId = uuidv4();
   let response = await network.registerUser(userId);
 
   if (response.error) {
@@ -29,7 +31,7 @@ app.post('/registerUser', async (req, res) => {
 app.post('/revokeUser', async (req, res) => {
   console.log(req.body);
   let userId = req.body.userId;
-  if (!userId){
+  if (!userId) {
     return res.send("Missing userId parameter")
   }
 

@@ -16,6 +16,7 @@ let appAdmin = config.appAdmin;
 let orgKey = config.orgKey;
 
 const ccpPath = path.join(process.cwd(), connection_file);
+console.log("ccpPath: ", ccpPath);
 const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
 
@@ -45,11 +46,11 @@ const registerUser = async function (userId) {
     const enrollment = await enrollUser(wallet, adminIdentity, userId);
     await createAccount(gateway, enrollment, userId);
 
-    let response = {certificate: enrollment.certificate, privateKey: enrollment.key.toBytes(), orgMSPID: organizationConfig.mspid}
+    let response = { certificate: enrollment.certificate, privateKey: enrollment.key.toBytes(), orgMSPID: organizationConfig.mspid }
     return response;
   } catch (error) {
     console.error(`Failed to register user ${userId}: ${error}`);
-    return {error: error};
+    return { error: error };
   }
 };
 
@@ -76,11 +77,11 @@ const revokeUser = async function (userId) {
     const adminUser = await provider.getUserContext(adminIdentity, 'admin');
     const identityService = ca.newIdentityService();
     identityService.delete(userId, adminUser);
-  
-    return {message: "Revoked user successfuly"};
+
+    return { message: "Revoked user successfuly" };
   } catch (error) {
     console.error(`Failed to register user ${userId}: ${error}`);
-    return {error: error};
+    return { error: error };
   }
 };
 
