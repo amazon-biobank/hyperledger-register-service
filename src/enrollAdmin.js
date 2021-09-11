@@ -24,7 +24,7 @@ let orgKey = config.orgKey;
 async function main() {
     try {
         // load the network configuration
-        const ccpPath = path.resolve(__dirname, 'local_fabric_connection.json');
+        const ccpPath = path.resolve(__dirname, 'connection-org1.json');
         const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
 
         // Create a new CA client for interacting with the CA.

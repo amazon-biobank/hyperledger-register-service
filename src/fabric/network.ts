@@ -42,6 +42,7 @@ const registerUser = async function (userId) {
 
     const gateway = new Gateway();
     await gateway.connect(ccp, { wallet: wallet, identity: appAdmin, discovery: gatewayDiscovery });
+
     const enrollment = await enrollUser(wallet, adminIdentity, userId);
     await createAccount(gateway, enrollment, userId);
 
@@ -87,7 +88,8 @@ const revokeUser = async function (userId) {
 async function enrollUser(wallet: any, adminIdentity: any, userId: any) {
   const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
   const adminUser = await provider.getUserContext(adminIdentity, 'admin');
-  const user = { affiliation: 'org1', enrollmentID: userId, role: 'client' };
+  const user = { affiliation: 'org1.department1', enrollmentID: userId, role: 'client' };
+
   const secret = await ca.register(user, adminUser);
   const enrollRequest = { enrollmentID: userId, enrollmentSecret: secret };
   const enrollment = await ca.enroll(enrollRequest);
