@@ -1,9 +1,8 @@
 {
-  "connection_file": "src/connection-org1.json",
   "appAdmin": "admin",
   "appAdminSecret": "adminpw",
   "orgKey": "Org1",
-  "caName": "https://50.23.5.248:32087",
+  "caName": "ca-org1",
   "gatewayDiscovery": {
     "enabled": true,
     "asLocalhost": true
