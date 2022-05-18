@@ -14,9 +14,16 @@ app.post('/registerUser', registerUserHandler);
 
 app.post('/revokeUser', revokeUserHandler);
 
-app.listen(port, () => {
-  const fabricNetwork = FabricNetworkConnection.getInstance();
-  fabricNetwork.init();
-  enrollAdmin();
-  return console.log(`Hyperledger Register Service is listening on ${port}`);
+app.listen(port, async () => {
+  try{
+    const fabricNetwork = new FabricNetworkConnection();
+    console.log("[INFO] Initializing Hyperledger connection.")
+    await fabricNetwork.init();
+    console.log("[INFO] Enrolling admin role.")
+    await enrollAdmin();
+    console.log(`Hyperledger Register Service is listening on ${port}`);
+  }
+  catch(e) {
+    console.log(e)
+  }
 });

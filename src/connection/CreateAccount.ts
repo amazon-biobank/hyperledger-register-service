@@ -1,4 +1,7 @@
-async function createAccount(gateway: any, enrollment: any, userId: any) {
+import FabricCAServices from "fabric-ca-client";
+import { Gateway } from "fabric-network";
+
+export async function createAccount(gateway: Gateway, enrollment: FabricCAServices.IEnrollResponse, userId: string) {
     const network = await gateway.getNetwork('channel2');
     const contract = await network.getContract('currency', 'AccountContract');
     const createdAt = new Date();
@@ -7,5 +10,5 @@ async function createAccount(gateway: any, enrollment: any, userId: any) {
       name: userId,
       created_at: createdAt.toDateString()
     };
-    return contract.submitTransaction('createAccount', [JSON.stringify(accountAttributes)]);
+    return contract.submitTransaction('createAccount', JSON.stringify(accountAttributes));
   }

@@ -7,11 +7,13 @@ export const revokeUserHandler = async (req, res) => {
       return res.send("Missing userId parameter")
     }
   
-    let response = await revokeUser(userId);
-  
-    if (response.error) {
-      res.send(response.error);
-    } else {
+    try{
+      let response = await revokeUser(userId);
       res.send(response);
+    }
+    catch(e){
+      if (e instanceof Error){
+        res.status(500).send(e.message);
+      }
     }
   }

@@ -1,20 +1,19 @@
 import { Gateway, Wallets } from "fabric-network";
 import path from "path";
 import { FabricNetworkConnection } from "../fabric/network";
+import { createAccount } from "./CreateAccount";
 import { enrollUser } from "./EnrollUser";
 
-export const registerUser = async function (userId) {
+export const registerUser = async function (userId: string) {
     try {
         const network = FabricNetworkConnection.getInstance();
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(process.cwd(), '../wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
     
         const adminIdentity = await wallet.get(network.appConfig.appAdmin);
         if (!adminIdentity) {
-            return {
-                error: `An identity for the admin user ${network.appConfig.appAdmin} does not exist in the wallet. 
-                Run the src/enrollAdmin.js application before retrying`
-            };
+            throw Error(`An identity for the admin user ${network.appConfig.appAdmin} does not exist in the wallet. 
+                Run the src/enrollAdmin.js application before retrying`);
         }
     
         const gateway = new Gateway();
@@ -37,6 +36,6 @@ export const registerUser = async function (userId) {
     }
     catch (error) {
         console.error(`Failed to register user ${userId}: ${error}`);
-        return { error: error };
+        throw Error("Failed to register user.");
     }
   };

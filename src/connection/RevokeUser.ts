@@ -5,15 +5,13 @@ import { FabricNetworkConnection } from "../fabric/network";
 export const revokeUser = async function (userId) {
     try {
         const network = FabricNetworkConnection.getInstance();
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(process.cwd(), '../wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
 
         const adminIdentity = await wallet.get(network.appConfig.appAdmin);
         if (!adminIdentity) {
-            return {
-            error: `An identity for the admin user ${network.appConfig.appAdmin} does not exist in the wallet. 
-            Run the src/enrollAdmin.js application before retrying`
-            };
+            throw Error(`An identity for the admin user ${network.appConfig.appAdmin} does not exist in the wallet. 
+            Run the src/enrollAdmin.js application before retrying`);
         }
     
         const gateway = new Gateway();
@@ -32,6 +30,6 @@ export const revokeUser = async function (userId) {
         return { message: "Revoked user successfuly" };
         } catch (error) {
         console.error(`Failed to register user ${userId}: ${error}`);
-        return { error: error };
-        }
+        throw error;
+    }
 };

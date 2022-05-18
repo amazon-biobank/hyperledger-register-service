@@ -9,12 +9,15 @@ export const registerUserHandler = async (req, res) => {
     }
     //USING UUID FOR DEVELOP PURPOSES
     userId = uuidv4();
-    let response = await registerUser(userId);
-  
-    // Trocar por exception
-    if ("error" in response) {
-      res.status(500).send(response.error);
-    } else {
+    try{
+      let response = await registerUser(userId);
       res.send(response);
+    }
+    catch(e){
+      if (e instanceof Error){
+        res.status(500).send({
+          error: e.message
+        });
+      }
     }
 }
