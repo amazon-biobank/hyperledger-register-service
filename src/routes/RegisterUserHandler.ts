@@ -7,8 +7,9 @@ export const registerUserHandler = async (req, res) => {
     if (!userId) {
       return res.send("Missing userId parameter")
     }
+    console.log(userId)
     //USING UUID FOR DEVELOP PURPOSES
-    userId = uuidv4();
+    // userId = uuidv4();
     try{
       let response = await registerUser(userId);
       res.send(response);
